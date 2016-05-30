@@ -27,6 +27,11 @@ class NewVisitorTest(unittest.TestCase):
 	def tearDown(self):
 		# Client closes browser
 		self.browser.quit()
+    
+	def check_for_row_in_list_table(self, row_text):
+		table = self.browser.find_element_by_id('id_list_table')
+		rows = table.find_elements_by_tag_name('tr')
+		return row_text in [row.text for row in rows]
 
 	def test_can_start_a_list_and_retrieve_it_later(self):
 		# Client navigates to site
@@ -49,21 +54,26 @@ class NewVisitorTest(unittest.TestCase):
 		#time.sleep(10)
         
         # Page updates and lists user's entry
-		table = self.browser.find_element_by_id('id_list_table')
-		# At least one of the rows of table should match user's latest entry
-		rows = table.find_elements_by_tag_name('tr')
-		#self.assertTrue(any(row.text == '1: Buy peacock feathers' for row in rows), 'New to-do item did not appear in table - text was:\n%s' % (table.text))
-		self.assertIn('1: Buy peacock feathers', [row.text for row in rows])
+		#table = self.browser.find_element_by_id('id_list_table')
 		
+        # At least one of the rows of table should match user's latest entry
+		#rows = table.find_elements_by_tag_name('tr')
+		#self.assertTrue(any(row.text == '1: Buy peacock feathers' for row in rows), 'New to-do item did not appear in table - text was:\n%s' % (table.text))
+		#self.assertIn('1: Buy peacock feathers', [row.text for row in rows])
+		self.assertTrue(self.check_for_row_in_list_table('1: Buy peacock feathers'))
+
 		# Enters another item
 		inputbox = self.browser.find_element_by_id('id_new_item')
 		inputbox.send_keys('Use peacock feathers to make a fly')
 		inputbox.send_keys(Keys.ENTER)
 
 		# Page updates again and lists second entry with appropriate numbering
-		table = self.browser.find_element_by_id('id_list_table')
-		rows = table.find_elements_by_tag_name('tr')
-		self.assertIn('2: Use peacock feathers to make a fly', [row.text for row in rows])
+		#table = self.browser.find_element_by_id('id_list_table')
+		#rows = table.find_elements_by_tag_name('tr')
+		#self.assertIn('2: Use peacock feathers to make a fly', [row.text for row in rows])
+		self.assertTrue(self.check_for_row_in_list_table('1: Buy peacock feathers'))
+		self.assertTrue(self.check_for_row_in_list_table('2: Use peacock feathers to make a fly'))
+
 		self.fail("Finish the Test!")
 
 if __name__ == '__main__':
