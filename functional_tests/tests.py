@@ -51,18 +51,11 @@ class NewVisitorTest(LiveServerTestCase):
 		# User hits enter
 		inputbox.send_keys(Keys.ENTER)
 
-		#import time
-		#time.sleep(10)
-        
-        # Page updates and lists user's entry
-		#table = self.browser.find_element_by_id('id_list_table')
-		
-        # At least one of the rows of table should match user's latest entry
-		#rows = table.find_elements_by_tag_name('tr')
-		#self.assertTrue(any(row.text == '1: Buy peacock feathers' for row in rows), 'New to-do item did not appear in table - text was:\n%s' % (table.text))
-		#self.assertIn('1: Buy peacock feathers', [row.text for row in rows])
-
-		#self.assertTrue(self.check_for_row_in_list_table('1: Buy peacock feathers'), 'New to-do item did not appear in table - text was:\n%s' % (table.text))
+		# A new URL is generated for user
+		edith_list_url = self.browser.current_url
+		self.assertRegex(edith_list_url, '/lists/.+')
+		# Page updates and lists user's entry
+		# At least one of the rows of table should match user's latest entry
 		self.check_for_row_in_list_table('1: Buy peacock feathers')
 
 		# Enters another item
@@ -71,14 +64,44 @@ class NewVisitorTest(LiveServerTestCase):
 		inputbox.send_keys(Keys.ENTER)
 
 		# Page updates again and lists second entry with appropriate numbering
-		#table = self.browser.find_element_by_id('id_list_table')
-		#rows = table.find_elements_by_tag_name('tr')
-		#self.assertIn('2: Use peacock feathers to make a fly', [row.text for row in rows])
-		#self.assertTrue(self.check_for_row_in_list_table('1: Buy peacock feathers'), 'New to-do item did not appear in table - text was:\n%s' % (table.text))
 		self.check_for_row_in_list_table('1: Buy peacock feathers')
-        #self.assertTrue(self.check_for_row_in_list_table('2: Use peacock feathers to make a fly'), 'New to-do item did not appear in table - text was:\n%s' % (table.text))
 		self.check_for_row_in_list_table('2: Use peacock feathers to make a fly')
 
+		# A new user, Francis, now visits the site
+        
+		## A new browser session is used to ensure that no information is being passed through cookies etc
+		self.browser.quit()
+		self.browser = webdriver.Firefox()
+
+		# Francis visits the site
+		self.browser.get(self.live_server_url)
+
+		# Francis should not be able to see previous user's information
+		page_text = self.browser.get_element_by_tag_name('body').text
+		self.assertNotIn('Buy peacock feathers', page_text)
+		self.assertNotIn('make a fly', page_text)
+
+		# Francis enters his own To-Do list
+		inputbox = self.browser.find_element_by_id('id_new_item')
+		# He enters his item
+		inputbox.send_keys('Buy milk')
+		inputbox.send_keys(Keys.ENTER)
+
+		# A new URL is generated for him    
+		francis_list_url = self.browser.current_url
+		self.assertRegex(francis_list_url, '/lists/.+')
+		# The URL is unique to him
+		self.assertNotEqual(francis_list_url, edith_list_url)
+        
+		# Again, previous user's content should not appear
+		page_text = self.browser.get_element_by_tag_name('body').text
+		self.assertNotIn('Buy peacock feathers', page_text)
+		self.assertNotIn('make a fly', page_text)
+
+		# His own content should appear
+		self.assertIn('Buy milk', page_text)
+
+        
 		self.fail("Finish the Test!")
 
 
