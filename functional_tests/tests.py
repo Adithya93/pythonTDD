@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from django.test import LiveServerTestCase
 import unittest
 
 
@@ -16,7 +17,7 @@ assert 'To-Do' in browser.title
 # Client closes browser
 browser.quit()
 '''
-class NewVisitorTest(unittest.TestCase):
+class NewVisitorTest(LiveServerTestCase):
 	
 	def setUp(self):
 		# Client opens browser
@@ -31,11 +32,11 @@ class NewVisitorTest(unittest.TestCase):
 	def check_for_row_in_list_table(self, row_text):
 		table = self.browser.find_element_by_id('id_list_table')
 		rows = table.find_elements_by_tag_name('tr')
-		return row_text in [row.text for row in rows]
+		self.assertTrue(row_text in [row.text for row in rows], 'New to-do item did not appear in table - text was:\n%s' % (table.text))
 
 	def test_can_start_a_list_and_retrieve_it_later(self):
 		# Client navigates to site
-		self.browser.get("http://localhost:8000")
+		self.browser.get(self.live_server_url)
 		# Client sees To-Do List in page title
 		self.assertIn('To-Do', self.browser.title)
 		header_text = self.browser.find_element_by_tag_name('h1').text
@@ -60,7 +61,9 @@ class NewVisitorTest(unittest.TestCase):
 		#rows = table.find_elements_by_tag_name('tr')
 		#self.assertTrue(any(row.text == '1: Buy peacock feathers' for row in rows), 'New to-do item did not appear in table - text was:\n%s' % (table.text))
 		#self.assertIn('1: Buy peacock feathers', [row.text for row in rows])
-		self.assertTrue(self.check_for_row_in_list_table('1: Buy peacock feathers'))
+
+		#self.assertTrue(self.check_for_row_in_list_table('1: Buy peacock feathers'), 'New to-do item did not appear in table - text was:\n%s' % (table.text))
+		self.check_for_row_in_list_table('1: Buy peacock feathers')
 
 		# Enters another item
 		inputbox = self.browser.find_element_by_id('id_new_item')
@@ -71,14 +74,11 @@ class NewVisitorTest(unittest.TestCase):
 		#table = self.browser.find_element_by_id('id_list_table')
 		#rows = table.find_elements_by_tag_name('tr')
 		#self.assertIn('2: Use peacock feathers to make a fly', [row.text for row in rows])
-		self.assertTrue(self.check_for_row_in_list_table('1: Buy peacock feathers'))
-		self.assertTrue(self.check_for_row_in_list_table('2: Use peacock feathers to make a fly'))
+		#self.assertTrue(self.check_for_row_in_list_table('1: Buy peacock feathers'), 'New to-do item did not appear in table - text was:\n%s' % (table.text))
+		self.check_for_row_in_list_table('1: Buy peacock feathers')
+        #self.assertTrue(self.check_for_row_in_list_table('2: Use peacock feathers to make a fly'), 'New to-do item did not appear in table - text was:\n%s' % (table.text))
+		self.check_for_row_in_list_table('2: Use peacock feathers to make a fly')
 
 		self.fail("Finish the Test!")
-
-if __name__ == '__main__':
-	unittest.main(warnings='ignore')
-
-
 
 
